@@ -29,6 +29,7 @@ jobs:
       - name: Crea progetto Android
         run: |
           npx cap add android
+          npx -y @capacitor/assets generate --android
           npx cap sync android
 
       - name: Compila APK
