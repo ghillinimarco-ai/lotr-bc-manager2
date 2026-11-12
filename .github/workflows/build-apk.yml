@@ -29,11 +29,16 @@ jobs:
       - name: Crea progetto Android
         run: |
           npx cap add android
-          mkdir -p assets
-          [ -f icon-only.png ] && mv icon-only.png assets/icon-only.png || true
-          [ -f assets/icon-only.png ] || { [ -f icon.png ] && cp icon.png assets/icon-only.png; } || true
-          ls -R assets || echo "Nessuna icona trovata"
-          npx -y @capacitor/assets generate --android --iconBackgroundColor '#000000'
+          sudo apt-get update -qq
+          sudo apt-get install -y imagemagick
+          RES=android/app/src/main/res
+          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
+            IFS=: read dens L F <<< "$d"
+            convert icon-only.png -resize ${L}x${L} $RES/mipmap-$dens/ic_launcher.png
+            convert icon-only.png -resize ${L}x${L} $RES/mipmap-$dens/ic_launcher_round.png
+            convert icon-only.png -resize ${F}x${F} $RES/mipmap-$dens/ic_launcher_foreground.png
+          done
+          echo '<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_background">#0d1620</color></resources>' > $RES/values/ic_launcher_background.xml
           npx cap sync android
 
       - name: Compila APK
