@@ -29,8 +29,11 @@ jobs:
       - name: Crea progetto Android
         run: |
           npx cap add android
-          ls -R assets
-          npx -y @capacitor/assets generate --android --iconBackgroundColor '#0d1620'
+          mkdir -p assets
+          [ -f icon-only.png ] && mv icon-only.png assets/icon-only.png || true
+          [ -f assets/icon-only.png ] || { [ -f icon.png ] && cp icon.png assets/icon-only.png; } || true
+          ls -R assets || echo "Nessuna icona trovata"
+          npx -y @capacitor/assets generate --android --iconBackgroundColor '#000000'
           npx cap sync android
 
       - name: Compila APK
