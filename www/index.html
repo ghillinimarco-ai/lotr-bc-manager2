@@ -1,5 +1,18 @@
 <!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><title>LOTR Battle Company Roster</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LOTR Roster">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<script>
+/* Service worker solo online su GitHub Pages (non nell'APK) */
+if('serviceWorker' in navigator && /\.github\.io$/.test(location.hostname)){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}
+</script><style>
 :root{--bg:#eef3f8;--card:#ffffff;--tx:#13212e;--mu:#5a6f80;--ac:#0a6cd9;--bd:#cfdbe6;--ok:#0f9d6e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d1620;--card:#15212d;--tx:#e6eef6;--mu:#8fa5b8;--ac:#3db4ff;--bd:#2a3b4c}}
 :root[data-theme=dark]{--bg:#0d1620;--card:#15212d;--tx:#e6eef6;--mu:#8fa5b8;--ac:#3db4ff;--bd:#2a3b4c}
