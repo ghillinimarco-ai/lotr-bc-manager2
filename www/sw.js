@@ -1,5 +1,5 @@
 /* Service worker: rete prima, cache come riserva offline. Il video non viene messo in cache. */
-const CACHE = 'lotr-roster-v1';
+const CACHE = 'lotr-roster-v2';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -19,7 +19,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
-  if (url.pathname.endsWith('.mp4') || req.headers.has('range')) return; // video: sempre dalla rete
+  if (url.pathname.endsWith('.mp4') || url.pathname.endsWith('.mp3') || req.headers.has('range')) return; // video e musica: sempre dalla rete
   e.respondWith(
     fetch(req)
       .then(res => {
