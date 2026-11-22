@@ -2069,6 +2069,7 @@ applyBat();
     var SECTION_KEYS=['wargear base','wargear aggiuntivo','wargear','equipaggiamento','infortuni','regole minori','regole speciali','upgrade di compagnia','azioni eroiche','esperienza aggiuntiva'];
     var BELOW_RE=/wargear|equipaggiamento|infortuni|regole minori|regole speciali|upgrade di compagnia|azioni eroiche|esperienza aggiuntiva|xp|salta prossima|promuovi|rimuovi/;
 
+    try{ window.__bcUnliftMenu=(typeof unliftMenu==="function")?unliftMenu:null; }catch(e){}
     var STEPS=[
       /* 0 */ { mode:'modal', title:'Tutorial',
         body:'Benvenuto all\'interno del tutorial, ti guider\u00f2 alla creazione e alla gestione della tua prima armata!' },
@@ -2253,6 +2254,7 @@ applyBat();
       document.body.classList.remove('tut-menu-open');
     }
     function liftMenu(box){
+      if(window.__bcDialogOpen){ try{ unliftMenu(); }catch(e){} return; }
       if(box.getAttribute('data-tut-menu'))return;
       unliftMenu();
       var n=box, guard=0;
@@ -2270,6 +2272,7 @@ applyBat();
       document.body.classList.add('tut-menu-open');
     }
     function menuCheck(){
+      if(window.__bcDialogOpen){ try{ unliftMenu(); }catch(e){} return; }
       if(window.__tutOpen){ unliftMenu(); return; }
       var box=dotsMenuBox();
       if(!box){ unliftMenu(); return; }
@@ -3733,7 +3736,8 @@ applyBat();
     })();
     }catch(e){console.error('[TUTORIAL]',e)}
 
-            /* ----- [CUSTOM-05] AUDIO-GATE v3 (menu audio non bloccante, no loop observer) ----- */
+            /* BC_DELETE_GUARD_AUDIO */
+    /* ----- [CUSTOM-05] AUDIO-GATE v3 (menu audio non bloccante, no loop observer) ----- */
     try{
     (function(){
     if(window.__bcAudioGate){return;} window.__bcAudioGate=1;
@@ -3945,6 +3949,7 @@ applyBat();
     }
     /* BC_AUDIO_FULLWIDTH - allunga lo slider a tutta la larghezza del menu */
     function fitWidth(){
+      if(window.__bcMenuLock)return;
       if(!block||!document.contains(block))return;
       var box=block.parentElement;
       if(!box)return;
@@ -3985,6 +3990,7 @@ applyBat();
       });
     }
     function paintMenu(){
+      if(window.__bcMenuLock)return;
       if(!block||!document.contains(block)){ block=null; return; }
       var off=isMuted()||!unlocked;
       var pct=Math.round(vol()*100);
@@ -4041,6 +4047,7 @@ applyBat();
       return d;
     }
     function ensureMenu(){
+      if(window.__bcMenuLock)return;
       if(injectOff)return;
       var box=menuBox();
       if(!box){ block=null; return; }
@@ -4055,9 +4062,7 @@ applyBat();
           if(t.indexOf('stampa')>=0&&t.length<40){ anchor=kids[i]; break; }
           if(t.indexOf('duplica armata')>=0||t.indexOf('elimina armata')>=0)lastArmy=kids[i];
         }
-        if(anchor)box.insertBefore(fresh,anchor);
-        else if(lastArmy&&lastArmy.nextSibling)box.insertBefore(fresh,lastArmy.nextSibling);
-        else box.appendChild(fresh);
+        box.appendChild(fresh);
       });
       block=fresh; fitWidth();
       errCount=0;
@@ -4125,6 +4130,361 @@ applyBat();
     else { boot(); }
     })();
     }catch(e){console.error('[AUDIO-GATE]',e)}
+
+        /* BC_DELETE_GUARD_FIX */
+    /* ----- [CUSTOM-06] MENU-DIALOG-FIX v3 (BC_MENU_DIALOG_FIX) ----- */
+    try{
+    (function(){
+    if(window.__bcMenuDialogFix){return;} window.__bcMenuDialogFix=1;
+    var mo=null, paused=false, scheduled=false, openNode=null, openInline=false, closedOnce=false;
+    var raised=null, tickTimer=null, hiddenAudio=false, menuRef={box:null,wrap:null};
+    var CONFIRM_RE=/conferm|elimina|elimin|sicuro|annulla|procedere|sei sicuro/;
+
+    function txt(el){ return String(el.textContent||el.value||'').replace(/\s+/g,' ').trim().toLowerCase(); }
+    function cls(el){ return (el.className&&typeof el.className==='string')?el.className.toLowerCase():''; }
+    function ours(el){ return !!(el.closest&&el.closest('#bcAudioMenu,#bcAudioGate,.tut-pop-scene,.tut-ov,#tutOverlay,.tut-cv,.tut-hole,.tut-out')); }
+    function pause(){ if(mo){ try{ mo.disconnect(); }catch(e){} } }
+    function resume(){ if(mo&&document.body){ try{ mo.observe(document.body,{childList:true,subtree:true}); }catch(e){} } }
+    function quiet(fn){ var was=paused; paused=true; pause(); try{ fn(); }catch(e){} paused=was; resume(); }
+    function schedule(d){
+      if(scheduled||paused)return;
+      scheduled=true;
+      setTimeout(function(){ scheduled=false; try{ check(); }catch(e){} }, d||40);
+    }
+    function visible(n){
+      if(!n||!document.contains(n))return false;
+      try{
+        var cs=getComputedStyle(n);
+        if(cs.display==='none'||cs.visibility==='hidden'||parseFloat(cs.opacity)===0)return false;
+        var r=n.getBoundingClientRect();
+        return r.width>8&&r.height>8;
+      }catch(e){ return false; }
+    }
+
+    function findMenuBox(){
+      var bs=document.querySelectorAll('button,a,summary,[role="button"],.btn,[data-act]');
+      for(var i=0;i<bs.length;i++){
+        var el=bs[i];
+        if(el.closest&&el.closest('#bcAudioMenu'))continue;
+        var t=txt(el);
+        if(t.indexOf('duplica armata')>=0||t.indexOf('elimina armata')>=0||t.indexOf('esporta armata corrente')>=0||t.indexOf('stampa (pdf)')>=0||t.indexOf('conferma eliminazione')>=0){
+          var box=el.parentElement;
+          if(box&&box!==document.body&&box!==document.documentElement)return box;
+        }
+      }
+      return document.querySelector('.mn .pop')||document.querySelector('.pop')||null;
+    }
+    function menuCtx(){
+      if(menuRef.box&&document.contains(menuRef.box))return menuRef;
+      var b=findMenuBox();
+      menuRef.box=b||null;
+      menuRef.wrap=b?b.parentElement:null;
+      return menuRef;
+    }
+    function inMenu(n){
+      var c=menuCtx();
+      if(!c.box)return false;
+      return !!(c.box.contains(n)||(c.wrap&&c.wrap.contains(n)));
+    }
+    function menuToggle(){
+      var c=menuCtx();
+      var b=document.getElementById('mbtn');
+      if(b&&visible(b)&&!(c.box&&c.box.contains(b)))return b;
+      var bs=document.querySelectorAll('button,[role="button"]');
+      for(var i=0;i<bs.length;i++){
+        var t=txt(bs[i]);
+        if(t!=='\u22ee'&&t!=='\u2026'&&t!=='\u22ef'&&t!=='...')continue;
+        if(!visible(bs[i]))continue;
+        if(c.box&&c.box.contains(bs[i]))continue;
+        return bs[i];
+      }
+      return null;
+    }
+
+    function forceUnlift(){
+      try{ if(typeof window.__bcUnliftMenu==='function'){ window.__bcUnliftMenu(); } }catch(e){}
+      var ns=document.querySelectorAll('[data-tut-menu]');
+      for(var i=0;i<ns.length;i++){
+        var n=ns[i];
+        try{
+          var z=parseInt(n.style.zIndex,10);
+          if(!isNaN(z)&&z>=99990)n.style.removeProperty('z-index');
+          if(n.style.position==='relative')n.style.removeProperty('position');
+          n.removeAttribute('data-tut-menu');
+        }catch(e){}
+      }
+      try{ document.body.classList.remove('tut-menu-open'); }catch(e){}
+    }
+
+    function candidates(){
+      var out=[], seen=[];
+      var seeds=document.querySelectorAll('button,[role="button"],[role="dialog"],[role="alertdialog"]');
+      for(var i=0;i<seeds.length;i++){
+        var n=seeds[i], d=0;
+        while(n&&n!==document.body&&n!==document.documentElement&&d<7){
+          if(seen.indexOf(n)<0){ seen.push(n); out.push(n); }
+          n=n.parentElement; d++;
+        }
+      }
+      return out;
+    }
+    function baseOk(n){
+      if(!n||n.nodeType!==1)return false;
+      if(ours(n))return false;
+      if(n.id&&/^(tut|bc)/i.test(n.id))return false;
+      var tag=n.tagName;
+      if(tag==='SCRIPT'||tag==='STYLE'||tag==='LINK'||tag==='META'||tag==='NAV'||tag==='HEADER')return false;
+      if(n.hasAttribute&&n.hasAttribute('data-tut-menu'))return false;
+      var c=menuCtx();
+      if(c.box&&(n===c.box||n===c.wrap))return false;
+      return true;
+    }
+    function inlineConfirm(n){
+      if(!baseOk(n))return false;
+      if(!inMenu(n))return false;
+      var btns=n.querySelectorAll?n.querySelectorAll('button,[role="button"]'):[];
+      var role=n.getAttribute?n.getAttribute('role'):null;
+      if(role==='dialog'||role==='alertdialog')return true;
+      if(!btns||btns.length===0)return false;
+      if(!visible(n))return false;
+      var t=txt(n);
+      if(CONFIRM_RE.test(t))return true;
+      if(/(^|[\s_-])(modal|overlay|dialog|ask|confirm|popup)([\s_-]|$)/.test(cls(n)))return true;
+      return false;
+    }
+    function outerOverlay(n){
+      if(!baseOk(n))return false;
+      if(inMenu(n))return false;
+      var btns=n.querySelectorAll?n.querySelectorAll('button,[role="button"]'):[];
+      var role=n.getAttribute?n.getAttribute('role'):null;
+      var roleHit=(role==='dialog'||role==='alertdialog');
+      if((!btns||btns.length===0)&&!roleHit)return false;
+      var cs;
+      try{ cs=getComputedStyle(n); }catch(e){ return false; }
+      if(cs.display==='none'||cs.visibility==='hidden'||parseFloat(cs.opacity)===0)return false;
+      if(cs.position!=='fixed')return false;
+      var r=n.getBoundingClientRect();
+      if(r.width<120||r.height<120)return false;
+      var cover=(r.width*r.height)/Math.max(1,(window.innerWidth*window.innerHeight));
+      if(cover>=0.40)return true;
+      if(roleHit&&cover>=0.20)return true;
+      if(/(^|[\s_-])(modal|overlay|dialog|sheet|picker|lightbox|backdrop)([\s_-]|$)/.test(cls(n))&&cover>=0.20)return true;
+      return false;
+    }
+    function findDialog(){
+      var list=candidates(), i, n;
+      for(i=0;i<list.length;i++){ n=list[i]; if(inlineConfirm(n))return {node:n,inline:true}; }
+      var best=null, bestScore=-1;
+      for(i=0;i<list.length;i++){
+        n=list[i];
+        if(!outerOverlay(n))continue;
+        var z=0, area=0;
+        try{ z=parseInt(getComputedStyle(n).zIndex,10)||0; var r=n.getBoundingClientRect(); area=r.width*r.height; }catch(e){}
+        var score=z*1000000+Math.min(area,900000);
+        if(score>bestScore){ bestScore=score; best=n; }
+      }
+      return best?{node:best,inline:false}:null;
+    }
+
+    function lower(){
+      if(!raised)return;
+      try{
+        if(raised.z)raised.el.style.zIndex=raised.z; else raised.el.style.removeProperty('z-index');
+        if(raised.p)raised.el.style.position=raised.p; else raised.el.style.removeProperty('position');
+      }catch(e){}
+      raised=null;
+    }
+    function raise(n){
+      if(raised&&raised.el===n)return;
+      lower();
+      raised={el:n, z:n.style.zIndex, p:n.style.position};
+      try{ n.style.zIndex='2147483600'; }catch(e){}
+    }
+    function hideAudio(on){
+      var b=document.getElementById('bcAudioMenu');
+      if(!b)return;
+      if(on){ if(!hiddenAudio){ b.style.display='none'; hiddenAudio=true; } }
+      else if(hiddenAudio){ b.style.removeProperty('display'); hiddenAudio=false; }
+    }
+
+    function setOpen(hit){
+      if(window.__bcMenuLock){ return; }
+      openNode=hit.node;
+      openInline=hit.inline;
+      window.__bcDialogOpen=true;
+      quiet(function(){
+        forceUnlift();
+        if(hit.inline){
+          hideAudio(true);
+          lower();
+        } else {
+          hideAudio(false);
+          raise(hit.node);
+          var c=menuCtx();
+          if(c.box&&visible(c.box)&&!closedOnce&&!inMenu(hit.node)){
+            var tg=menuToggle();
+            if(tg){ closedOnce=true; try{ tg.click(); }catch(e){} }
+          }
+        }
+      });
+    }
+    function clearOpen(){
+      openNode=null; openInline=false; closedOnce=false;
+      window.__bcDialogOpen=false;
+      quiet(function(){ lower(); hideAudio(false); });
+    }
+    function check(){
+      if(window.__bcMenuLock){ return; }
+      if(window.__tutOpen){ if(openNode)clearOpen(); return; }
+      if(openNode){
+        if(visible(openNode)){
+          if(openInline)quiet(function(){ forceUnlift(); hideAudio(true); });
+          return;
+        }
+        clearOpen();
+        return;
+      }
+      var hit=findDialog();
+      if(hit)setOpen(hit);
+    }
+
+    document.addEventListener('click',function(){
+      schedule(0);
+      setTimeout(function(){ schedule(0); },80);
+      setTimeout(function(){ schedule(0); },200);
+      setTimeout(function(){ schedule(0); },420);
+      setTimeout(function(){ schedule(0); },800);
+    },true);
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){ setTimeout(function(){ schedule(0); },60); }
+    });
+
+    function boot(){
+      window.__bcDialogOpen=false;
+      menuCtx();
+      mo=new MutationObserver(function(){ schedule(40); });
+      resume();
+      if(!tickTimer){
+        tickTimer=setInterval(function(){
+          if(window.__tutOpen)return;
+          if(openNode){ check(); return; }
+          var c=menuCtx();
+          if(c.box&&visible(c.box))check();
+        },300);
+      }
+      schedule(120);
+    }
+    if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); }
+    else { boot(); }
+    })();
+    }catch(e){console.error('[MENU-DIALOG-FIX]',e)}
+
+    /* ----- [CUSTOM-07] DELETE-GUARD v2 (BC_DELETE_GUARD) ----- */
+    try{
+    (function(){
+    if(window.__bcDeleteGuard2){return;} window.__bcDeleteGuard2=1;
+    var TRIG=/elimina armata|conferma eliminazione|elimina quest|eliminazione armata|conferma elimin/;
+    var locked=false, timers=[], tick=null, until=0;
+
+    function txt(el){ return String((el&&el.textContent)||'').replace(/\s+/g,' ').trim().toLowerCase(); }
+    function menuBox(){
+      var bs=document.querySelectorAll('button,a,summary,[role="button"],.btn,[data-act]');
+      for(var i=0;i<bs.length;i++){
+        var el=bs[i];
+        if(el.closest&&el.closest('#bcAudioMenu'))continue;
+        var t=txt(el);
+        if(t.length>70)continue;
+        if(t.indexOf('duplica armata')>=0||t.indexOf('elimina armata')>=0||t.indexOf('conferma eliminazione')>=0||t.indexOf('stampa (pdf)')>=0||t.indexOf('esporta armata corrente')>=0){
+          var box=el.parentElement;
+          if(box&&box!==document.body&&box!==document.documentElement)return box;
+        }
+      }
+      return document.querySelector('.mn .pop')||document.querySelector('.pop')||null;
+    }
+    function shown(n){
+      if(!n||!document.contains(n))return false;
+      try{
+        var cs=getComputedStyle(n);
+        if(cs.display==='none'||cs.visibility==='hidden')return false;
+        var r=n.getBoundingClientRect();
+        return r.width>8&&r.height>8;
+      }catch(e){ return false; }
+    }
+    function clearTimers(){ for(var i=0;i<timers.length;i++){ try{ clearTimeout(timers[i]); }catch(e){} } timers=[]; }
+    function later(fn,ms){ timers.push(setTimeout(fn,ms)); }
+
+    function detachAudio(){
+      var b=document.getElementById('bcAudioMenu');
+      if(b&&b.parentNode){ try{ b.parentNode.removeChild(b); }catch(e){} }
+    }
+    function unlift(){
+      try{ if(typeof window.__bcUnliftMenu==='function')window.__bcUnliftMenu(); }catch(e){}
+      var ns=document.querySelectorAll('[data-tut-menu]');
+      for(var i=0;i<ns.length;i++){
+        var n=ns[i];
+        try{
+          var z=parseInt(n.style.zIndex,10);
+          if(!isNaN(z)&&z>=99990)n.style.removeProperty('z-index');
+          if(n.style.position==='relative')n.style.removeProperty('position');
+          n.removeAttribute('data-tut-menu');
+        }catch(e){}
+      }
+      var raised=document.querySelectorAll('[style*="2147483600"]');
+      for(var j=0;j<raised.length;j++){
+        try{ raised[j].style.removeProperty('z-index'); }catch(e){}
+      }
+      try{ document.body.classList.remove('tut-menu-open'); }catch(e){}
+    }
+    function engage(){
+      clearTimers();
+      locked=true;
+      window.__bcMenuLock=true;
+      window.__bcDialogOpen=false;
+      until=Date.now()+12000;
+      detachAudio();
+      unlift();
+      later(function(){ detachAudio(); unlift(); },60);
+      later(function(){ detachAudio(); unlift(); },180);
+    }
+    function release(){
+      clearTimers();
+      locked=false;
+      window.__bcMenuLock=false;
+      until=0;
+    }
+
+    document.addEventListener('click',function(e){
+      var t=e.target;
+      var ctl=(t&&t.closest)?t.closest('button,a,summary,[role="button"],.btn,[data-act],label'):null;
+      if(!ctl)return;
+      if(ctl.closest&&ctl.closest('#bcAudioMenu'))return;
+      var s=txt(ctl);
+      if(!s||s.length>70)return;
+      if(!TRIG.test(s))return;
+      engage();
+    },true);
+
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){ later(release,60); }
+    });
+
+    function boot(){
+      window.__bcMenuLock=false;
+      if(!tick){
+        tick=setInterval(function(){
+          if(!locked)return;
+          var box=menuBox();
+          if(!box||!shown(box)){ release(); return; }
+          if(until&&Date.now()>until){ release(); return; }
+          var t=txt(box);
+          if(t.indexOf('conferma elimin')<0&&t.indexOf('elimina armata')>=0){ release(); }
+        },200);
+      }
+    }
+    if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); }
+    else { boot(); }
+    })();
+    }catch(e){console.error('[DELETE-GUARD]',e)}
 </script>
 <script>
 /* ===== Musica di sottofondo: usa interruttore e volume "Musica" gia' presenti nel menu ⋮ dell'app ===== */
