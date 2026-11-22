@@ -1437,6 +1437,16 @@ lab.appendChild(ni);
 host.parentNode.insertBefore(lab,host.nextSibling);
 return ni;
 }
+/* se il pulsante foto sta dentro il menu ⋮, il menu va chiuso: gli input passano in un contenitore nascosto
+   (altrimenti render() li distruggerebbe prima che il selettore file si apra) */
+function endSession(){var h=document.getElementById('photoHold');if(h)h.remove()}
+function leaveMenu(orig,cam){
+endSession();
+var h=document.createElement('div');h.id='photoHold';h.style.setProperty('display','none','important');
+h.appendChild(orig);h.appendChild(cam);document.body.appendChild(h);
+orig.addEventListener('cancel',endSession,{once:true});cam.addEventListener('cancel',endSession,{once:true});
+try{if(typeof mo!=='undefined'&&mo){mo=false;render()}}catch(e){}
+}
 function closeSheet(){var s=document.getElementById('photoSheet');if(s)s.remove()}
 function closePrev(){var p=document.getElementById('photoPrev');if(p)p.remove()}
 function sheet(orig,cam){
@@ -1444,9 +1454,9 @@ closeSheet();
 var o=document.createElement('div');o.className='mdl';o.id='photoSheet';
 o.innerHTML='<div class="mb" role="dialog" aria-modal="true" style="max-width:320px"><p style="font-weight:800;margin:0 0 10px">📷 Foto</p><div style="display:flex;flex-direction:column;gap:8px"><button class="btn pri" data-pa="cam" style="margin:0">📸 Scatta con la fotocamera</button><button class="btn" data-pa="gal" style="margin:0">🖼 Scegli dalla galleria</button><button class="btn" data-pa="no" style="margin:0">✕ Annulla</button></div></div>';
 o.addEventListener('click',function(e){
-if(e.target===o){closeSheet();return}
+if(e.target===o){closeSheet();endSession();return}
 var c=e.target&&e.target.dataset?e.target.dataset.pa:null;if(!c)return;
-e.stopPropagation();closeSheet();
+e.stopPropagation();closeSheet();if(c==='no')endSession();
 if(c==='cam')openPicker(cam);else if(c==='gal')openPicker(orig);
 });
 document.body.appendChild(o);
@@ -1459,12 +1469,12 @@ closePrev();
 var o=document.createElement('div');o.className='mdl';o.id='photoPrev';
 o.innerHTML='<div class="mb" role="dialog" aria-modal="true" style="max-width:380px"><p style="font-weight:800;margin:0 0 8px">Anteprima foto</p><img src="'+fr.result+'" style="width:100%;max-height:46vh;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.35)" alt=""><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn pri" data-pp="ok" style="margin:0">✔ Applica</button>'+(src==='cam'?'<button class="btn" data-pp="re" style="margin:0">📸 Scatta di nuovo</button>':'')+'<button class="btn" data-pp="no" style="margin:0">✕ Annulla</button></div></div>';
 o.addEventListener('click',function(e){
-if(e.target===o){closePrev();el.value='';return}
+if(e.target===o){closePrev();el.value='';endSession();return}
 var c=e.target&&e.target.dataset?e.target.dataset.pp:null;if(!c)return;
 e.stopPropagation();closePrev();
-if(c==='ok'){el.dataset.photopass='1';el.dispatchEvent(new Event('change',{bubbles:true}))}
+if(c==='ok'){el.dataset.photopass='1';el.dispatchEvent(new Event('change',{bubbles:true}));endSession()}
 else if(c==='re'){el.value='';openPicker(el)}
-else{el.value=''}
+else{el.value='';endSession()}
 });
 document.body.appendChild(o);
 };
@@ -1479,6 +1489,7 @@ var orig=lab.querySelector('input[type=file]');
 if(!orig||!isImgInput(orig))return;
 var cam=camInputFor(lab);
 e.preventDefault();e.stopPropagation();
+if(lab.closest('.mn'))leaveMenu(orig,cam);else endSession();
 sheet(orig,cam);
 },true);
 /* file scelto: ridimensiona -> anteprima -> (Applica) -> l'app riceve il change */
