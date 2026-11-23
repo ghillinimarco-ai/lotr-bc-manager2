@@ -505,7 +505,7 @@ function battle(){const hs=S.h.filter(h=>(h.model||h.name)&&!h.miss),ts=S.t.filt
   if(k==='x'){const st=(S.ex&&S.ex[u.key])||{},w=u.kind==='Wanderer';return cmp('x',u.key,{model:u.model,bt:st.bt,mfw:u.mfw},{name:u.name,type:w?'Wanderer':'Creatura di '+u.owner,img:st.img,ic:w?'⚔':'🐾',mfw:!!u.mfw})}
   return cmp(k,i,u,{name:u.name||u.model,type:u.model||'—',img:u.img,ic:k==='h'?'⚔':'🛡',mfw:k==='h'})};
  return`<div class="brow"><button class="btn pri" id="endb">🏁 Concludi battaglia</button><button class="btn sm" id="bres">↺ Ripristina contatori</button></div>
- <div class="vtog"><button class="btn${S.bvc?'':' on'}" data-vw="0">▤ Vista classica</button><button class="btn${S.bvc?' on':''}" data-vw="1">▦ Vista compatta</button></div>
+ <div class="vtog"><button class="btn${S.bvc?'':' on'}" data-vw="0">▤ Vista completa</button><button class="btn${S.bvc?' on':''}" data-vw="1">▦ Vista compatta</button></div>
  ${tmCard()}
  <h2 class="sec">⚔ Eroi · ${hs.length+xh.length}</h2>${hs.length+xh.length?`<div class="grid${S.bvc?' cmpg':''}">${hs.map(h=>unit('h',S.h.indexOf(h),h)).join('')}${xh.map(e=>unit('x',e.key,e)).join('')}</div>`:'<p class="mu">Nessun eroe in battaglia.</p>'}
  <h2 class="sec">🛡 Truppe · ${ts.length+xt.length}</h2>${ts.length+xt.length?`<div class="grid${S.bvc?' cmpg':''}">${ts.map(x=>unit('t',S.t.indexOf(x),x)).join('')}${xt.map(e=>unit('x',e.key,e)).join('')}</div>`:'<p class="mu">Nessuna truppa in battaglia.</p>'}`+scoreSec()}
@@ -2113,7 +2113,8 @@ applyBat();
     '@keyframes tutMascotOut{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(16px) scale(.92)}}',
     '@keyframes tutBalloonIn{0%{opacity:0;transform:translateY(22px) scale(.93)}55%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}',
     '@keyframes tutBalloonOut{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-14px) scale(.96)}}',
-    '@keyframes tutGlow{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.55),0 0 10px 2px rgba(255,210,74,.35)}50%{box-shadow:0 0 0 5px rgba(255,210,74,.85),0 0 20px 6px rgba(255,210,74,.55)}}'
+    '@keyframes tutGlow{0%,100%{opacity:.35}50%{opacity:1}}',
+    '.tut-hole::after{content:"";position:absolute;left:-2px;top:-2px;right:-2px;bottom:-2px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 4px rgba(255,210,74,.85),0 0 18px 5px rgba(255,210,74,.55);animation:tutGlow 1.4s ease-in-out infinite;}'
     ].join('');
 
     function ensureStyle(){
@@ -2528,7 +2529,22 @@ applyBat();
       }
       return best;
     }
+    var _eh=null,_ehStep=-2;
     function expHeader(){
+      /* cache: l'intestazione resta valida finche' e' nel DOM, con stesso testo/dimensioni e stesso passo del tutorial */
+      var c=_eh;
+      if(c&&_ehStep===window.__tutStep&&document.contains(c)){
+        var ct=btnText(c);
+        if(ct.indexOf('esperienza aggiuntiva')===0&&ct.length<=60){
+          var cr=c.getBoundingClientRect();
+          if(cr.width>=60&&cr.height>0&&cr.height<=90)return c;
+        }
+      }
+      var b=expHeaderScan();
+      _eh=b; _ehStep=window.__tutStep;
+      return b;
+    }
+    function expHeaderScan(){
       var all=document.querySelectorAll('body *');
       var best=null, area=-1;
       for(var i=0;i<all.length;i++){
@@ -2903,7 +2919,7 @@ applyBat();
       var els=clickables();
       for(var i=0;i<els.length;i++){
         var tx=btnText(els[i]);
-        if(tx.indexOf('classica')>=0&&!classica)classica=els[i];
+        if((tx.indexOf('vista completa')>=0||tx.indexOf('vista classica')>=0)&&!classica)classica=els[i];
         if(tx.indexOf('compatta')>=0&&!compatta)compatta=els[i];
       }
       if(classica)out.push(classica);
@@ -3059,7 +3075,7 @@ applyBat();
       var r=allowBtn.getBoundingClientRect();
       if(!spotEls.menuHole){
         var hole=document.createElement('div'); hole.className='tut-hole';
-        hole.style.cssText='position:fixed;border-radius:10px;pointer-events:none;z-index:'+(Z_MENU+1)+';animation:tutSoftIn '+VEIL_IN+'ms linear both, tutGlow 1.4s ease-in-out '+VEIL_IN+'ms infinite;';
+        hole.style.cssText='position:fixed;border-radius:10px;pointer-events:none;z-index:'+(Z_MENU+1)+';animation:tutSoftIn '+VEIL_IN+'ms linear both;';
         document.body.appendChild(hole);
         spotEls.menuHole=hole;
       }
@@ -3130,7 +3146,7 @@ applyBat();
       return true;
     }
     function paintCanvas(cv,rects){
-      var W=window.innerWidth,H=window.innerHeight,dpr=window.devicePixelRatio||1;
+      var W=window.innerWidth,H=window.innerHeight,dpr=Math.min(window.devicePixelRatio||1,1.5);
       var w=Math.round(W*dpr),h=Math.round(H*dpr);
       if(cv.width!==w)cv.width=w;
       if(cv.height!==h)cv.height=h;
@@ -3198,7 +3214,7 @@ applyBat();
       var holes=[];
       for(var j=0;j<rects.length;j++){
         var hole=document.createElement('div'); hole.className='tut-hole';
-        hole.style.cssText='position:fixed;border-radius:14px;pointer-events:none;z-index:'+(Z_SPOT+1)+';animation:tutSoftIn '+VEIL_IN+'ms linear both, tutGlow 1.4s ease-in-out '+VEIL_IN+'ms infinite;';
+        hole.style.cssText='position:fixed;border-radius:14px;pointer-events:none;z-index:'+(Z_SPOT+1)+';animation:tutSoftIn '+VEIL_IN+'ms linear both;';
         placeHole(hole,rects[j]);
         document.body.appendChild(hole); holes.push(hole);
       }
@@ -3253,7 +3269,8 @@ applyBat();
         else if(spotEls.menuHole){ fadeOutRemove(spotEls.menuHole,VEIL_OUT); spotEls.menuHole=null; spotEls.menuBtn=null; }
       }
     }
-    function onResizeSpot(){ layoutSpot(); }
+    var _rsRaf=0;
+    function onResizeSpot(){ if(_rsRaf)return; _rsRaf=requestAnimationFrame(function(){ _rsRaf=0; layoutSpot(); }); }
 
     function headerH(){
       var h=document.querySelector('header')||document.querySelector('#nav');
