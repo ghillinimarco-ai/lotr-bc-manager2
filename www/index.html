@@ -2039,33 +2039,53 @@ applyBat();
         body:'In questa sezione \u00e8 possibile gestire la propria armata durante la partita.' },
       /* 25 */ { mode:'spot', advance:'next', find:'timeronly', scroll:'center', title:'Cronometro',
         body:'Da qui \u00e8 possibile impostare il timer in base alla durata prevista della partita.', gap:14 },
-      /* 26 */ { mode:'spot', advance:'action', lock:'start', find:'startonly', scroll:'center', popAlign:'left', title:'Inizio battaglia',
+      /* 26 */ { id:'start', mode:'spot', advance:'action', lock:'start', find:'startonly', scroll:'center', popAlign:'left', title:'Inizio battaglia',
         body:'Da qui si fa partire il cronometro e si inizia la battaglia. Premi \'Inizia battaglia\'.', gap:22 },
-      /* 27 */ { mode:'spot', advance:'next', find:'views', scroll:'center', title:'Visualizzazione 1/2',
+      /* adv1 */ { id:'adv1', mode:'spot', advance:'next', lock:'advview', find:'advpop', title:'Calcolo vantaggi 1/2',
+        body:'Qua va inserito il rating dell\'avversario. In caso di una differenza in punti superiore a 15 verranno mostrate le opzioni disponibili', gap:14 },
+      /* adv2 */ { id:'adv2', mode:'spot', advance:'action', lock:'advedit', find:'advpop', title:'Calcolo vantaggi 2/2',
+        body:'Inserisci adesso un rating pari a 200 per mostrare tutte le opzioni disponibili', gap:14 },
+      /* adv3 */ { id:'adv3', mode:'spot', advance:'action', lock:'advreroll', find:'advopt', title:'Vantaggi disponibili',
+        body:'Qui sono mostrate tutte le opzioni disponibili in base alla differenza saranno mostrate solo quelle accessibili. Ora seleziona Reroll', gap:14 },
+      /* 27 */ { id:'views1', mode:'spot', advance:'next', find:'views', scroll:'center', title:'Visualizzazione 1/2',
         body:'Sono disponibili due modalit\u00e0 di visualizzazione delle schede personaggio durante una battaglia.', gap:14 },
-      /* 28 */ { mode:'spot', advance:'action', lock:'classica', find:'views', scroll:'center', title:'Visualizzazione 2/2',
+      /* 28 */ { id:'views2', mode:'spot', advance:'action', lock:'classica', find:'views', scroll:'center', title:'Visualizzazione 2/2',
         body:'Da qui \u00e8 possibile modificare la visualizzazione delle schede eroi e truppe passando da una all\'altra. Seleziona la visualizzazione completa.', gap:14 },
-      /* 29 */ { mode:'spot', advance:'next', find:'battlecard', scroll:'center', title:'Scheda in battaglia 1/2',
+      /* 29 */ { id:'bcard1', mode:'spot', advance:'next', find:'battlecard', scroll:'center', title:'Scheda in battaglia 1/2',
         body:'In questa scheda si visualizza il profilo dell\'eroe (o truppa) completo di eventuali wargear e equipaggiamenti.', gap:14 },
       /* 30 */ { mode:'spot', advance:'next', find:'battlecard', scroll:'center', title:'Scheda in battaglia 2/2',
         body:'Da qui \u00e8 possibile durante la partita modificare le ferite e i valori di might will e fate senza cambiarli nel profilo.', gap:14 },
-      /* 31 */ { mode:'spot', advance:'action', lock:'exp', find:'battlecard', half:'bottom', scroll:'center', title:'Esperienza aggiuntiva',
+      /* 31 */ { id:'exp1', mode:'spot', advance:'action', lock:'exp', find:'battlecard', half:'bottom', scroll:'center', title:'Esperienza aggiuntiva',
         body:'Nella parte bassa della scheda apri la sezione esperienza aggiuntiva', gap:14 },
-      /* 32 */ { mode:'spot', advance:'action', lock:'mvp', find:'expmvp', scroll:'center', title:'Esperienza aggiuntiva',
+      /* 32 */ { id:'mvp', mode:'spot', advance:'action', lock:'mvp', find:'expmvp', scroll:'center', title:'Esperienza aggiuntiva',
         body:'In questa sezione puoi segnare l\'esperienza che verr\u00e0 assegnata a fine partita. Ora prova a selezionare la casella MVP', gap:14 },
+      /* wound1 */ { id:'wound1', mode:'spot', advance:'action', lock:'wound', find:'troopcard', scroll:'center', title:'Ferite 1/2',
+        body:'Prova ora a togliere una ferita all\'unit\u00e0', gap:14 },
+      /* wound2 */ { id:'wound2', mode:'spot', advance:'next', find:'troopcard', scroll:'center', title:'Ferite 2/2',
+        body:'La tua unit\u00e0 \u00e8 caduta in battaglia, ma non preoccuparti, a fine partita sar\u00e0 possibile salvarla', gap:14 },
       /* 33 */ { mode:'spot', advance:'next', find:'score', scroll:'center', title:'Risultato partita',
         body:'In fondo alla schermata \'battaglia\' \u00e8 possibile segnare il risultato della partita prima di concludere la partita.', gap:14 },
-      /* 34 */ { mode:'spot', advance:'action', lock:'end', find:'endbtn', scroll:'center', title:'Concludi battaglia',
+      /* 34 */ { id:'endbtn', mode:'spot', advance:'action', lock:'end', find:'endbtn', scroll:'center', title:'Concludi battaglia',
         body:'Adesso clicca su concludi battaglia per proseguire nel tutorial.', gap:14 },
-      /* 35 */ { mode:'spot', advance:'action', lock:'endconfirm', find:'endconfirm', noPop:true, scroll:'center', title:'',
+      /* 35 */ { id:'endconf', mode:'spot', advance:'action', lock:'endconfirm', find:'endconfirm', noPop:true, scroll:'center', title:'',
         body:'', gap:14 },
-      /* 36 */ { mode:'spot', advance:'next', autoTab:'trupp', delay:900, find:'expbars', scroll:'center', title:'Esperienza assegnata',
+      /* 36 */ { id:'expassign', mode:'spot', advance:'next', autoTab:'trupp', delay:900, find:'expbars', scroll:'center', title:'Esperienza assegnata',
         body:'A ogni truppa presente nella battaglia \u00e8 stato assegnato un punto esperienza, pi\u00f9 un punto aggiuntivo per ogni valore fleggato nell\'apposita sezione.', gap:14 },
+      /* cross */ { id:'cross', mode:'spot', advance:'action', lock:'injcross', find:'troopcross', scroll:'center', title:'Unit\u00e0 caduta',
+        body:'La tua truppa era caduta in battaglia. Nella parte alta della scheda vedi una croce lampeggiante, cliccaci sopra.', gap:14 },
+      /* inj1 */ { id:'inj1', mode:'spot', advance:'next', lock:'injview', find:'injpop', title:'Tiro salvezza 1/3',
+        body:'Qui \u00e8 possibile inserire il risultato del tiro salvezza per le tue truppe.', gap:14 },
+      /* inj2 */ { id:'inj2', mode:'spot', advance:'next', lock:'injview', find:'injpop', title:'Tiro salvezza 2/3',
+        body:'In base al risultato del tiro dei dadi la tua truppa pu\u00f2 guarire completamente, saltare la prossima partita o essere rimossa come perdita', gap:14 },
+      /* inj3 */ { id:'inj3', mode:'spot', advance:'action', lock:'injedit', find:'injpop', title:'Tiro salvezza 3/3',
+        body:'Inserisci ora per provare il risultato 7.', gap:14 },
+      /* injend */ { id:'injend', mode:'spot', advance:'action', lock:'injfinal', find:'injpop', noPop:true, title:'', body:'', gap:14 },
       /* 37 */ { mode:'spot', advance:'next', autoTab:'panoramica', delay:900, titles:['PUNTI INFLUENZA'], scroll:'center', title:'Punti influenza',
         body:'Quando si conclude una battaglia i punti influenza vengono aggiunti automaticamente al totale', gap:14 },
       /* 38 */ { mode:'modal', title:'Tutorial completato',
         body:'Grazie per aver terminato il tutorial! Ora sai gestire correttamente la tua armata e sei pronto per una grande avventura!' }
     ];
+    var IX={}; STEPS.forEach(function(s,k){ if(s.id)IX[s.id]=k; }); window.__tutIX=IX;
 
     var CSS=[
     '.tut-ov{position:fixed;inset:0;z-index:'+Z_MODAL+';background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;}',
@@ -2425,12 +2445,13 @@ applyBat();
           if(!document.contains(r.el)){ continue; }
           if(r.zi)r.el.style.zIndex=r.zi; else r.el.style.removeProperty('z-index');
           r.el.removeAttribute('data-tut-dialog');
+          if(r.el.getAttribute('data-tut-bg')){ r.el.style.removeProperty('background'); r.el.removeAttribute('data-tut-bg'); }
         }catch(e){}
       }
       raised=[];
       var stray=document.querySelectorAll('[data-tut-dialog]');
       for(var j=0;j<stray.length;j++){
-        try{ stray[j].style.removeProperty('z-index'); stray[j].removeAttribute('data-tut-dialog'); }catch(e){}
+        try{ stray[j].style.removeProperty('z-index'); stray[j].removeAttribute('data-tut-dialog'); if(stray[j].getAttribute('data-tut-bg')){ stray[j].style.removeProperty('background'); stray[j].removeAttribute('data-tut-bg'); } }catch(e){}
       }
     }
 
@@ -2927,6 +2948,20 @@ applyBat();
       if(compatta)out.push(compatta);
       return out;
     }
+    function raiseMine(ov){ if(!ov)return; raiseOverlay(ov); ov.style.zIndex=String(Z_SPOT+1); ov.setAttribute('data-tut-bg','1'); ov.style.background='transparent'; }
+    function advPop(){ var o=document.getElementById('advMdl'); if(!o)return null; raiseMine(o); return o.querySelector('.mb'); }
+    function injPop(){ var o=document.getElementById('injMdl'); if(!o)return null; raiseMine(o); return o.querySelector('.mb'); }
+    function firstTroopIdx(){
+      var a=(typeof S!=='undefined'&&S&&S.t)?S.t:[];
+      for(var k=0;k<a.length;k++){ if((a[k].model||a[k].name)&&!a[k].miss)return k; }
+      return -1;
+    }
+    function troopCardEl(cross){
+      var ti=firstTroopIdx(); if(ti<0)return null;
+      var e=document.querySelector(cross?'[data-injx="t.'+ti+'"]':'[data-bt^="t.'+ti+'.3."]');
+      if(!e&&cross)e=document.querySelector('[data-injx^="t."]');
+      return e?e.closest('.card'):null;
+    }
     function getTargets(st){
       var out=[];
       if(st.find==='promuovi'){ var b=findPromAction(); out=b?[b]:[]; }
@@ -2952,6 +2987,11 @@ applyBat();
       else if(st.find==='endbtn'){ var eb=findEndBtn(); out=eb?[eb]:[]; }
       else if(st.find==='endconfirm'){ var cd=findConfirmDialog(); out=cd?[cd]:[]; }
       else if(st.find==='expbars'){ out=findExpBars(); }
+      else if(st.find==='advpop'){ var ap=advPop(); out=ap?[ap]:[]; }
+      else if(st.find==='advopt'){ var ap2=advPop(); if(ap2){ out.push(ap2); var rr=ap2.querySelector('[data-a="o:rr"]'); if(rr)out.push(rr); } }
+      else if(st.find==='injpop'){ var ip=injPop(); out=ip?[ip]:[]; }
+      else if(st.find==='troopcard'){ var tc2=troopCardEl(false); out=tc2?[tc2]:[]; }
+      else if(st.find==='troopcross'){ var tc3=troopCardEl(true); out=tc3?[tc3]:[]; }
       else if(st.titles){ out=findByTitles(st.titles, st.sel, st.match); }
       else if(st.sel){ var el=document.querySelector(st.sel); out=el?[el]:[]; }
       if(st.first && out.length>1){ out=[out[0]]; }
@@ -3005,6 +3045,16 @@ applyBat();
       if(t.closest('.tut-out'))return false;
       if(t.closest('.tut-scene')||t.closest('.tut-pop-scene')||t.closest('.tut-ov'))return true;
       var lk=curLock();
+      if(lk==='advview'||lk==='injview')return false;
+      if(lk==='advedit'||lk==='injedit'||lk==='injfinal'){
+        var pm=document.getElementById(lk==='advedit'?'advMdl':'injMdl');
+        if(!pm||!pm.contains(t))return false;
+        if(lk!=='injfinal'&&t.closest('[data-a="no"]'))return false;
+        return true;
+      }
+      if(lk==='advreroll')return !!t.closest('#advMdl [data-a="o:rr"]');
+      if(lk==='wound'){ var wti=firstTroopIdx(); return !!(wti>=0&&t.closest('button[data-bt^="t.'+wti+'.3."]')); }
+      if(lk==='injcross')return !!t.closest('[data-injx^="t."]');
       if(lk==='endconfirm'){
         var cd=findConfirmDialog();
         if(cd&&(t===cd||cd.contains(t)))return true;
@@ -3430,9 +3480,9 @@ applyBat();
       if(st.mode==='modal'){ renderModal(); }
       else if(st.mode==='spot'){
         if(st.advance==='action' && i===1){ bcStart=(typeof S!=='undefined'&&S)?S.bc:null; }
-        if(i===26){ timerPrev=timerText(); timerChanges=0; }
-        if(i===35){ confirmSince=Date.now(); }
-        if(i===32){ mvpSince=Date.now(); }
+        if(i===IX.start){ timerPrev=timerText(); timerChanges=0; }
+        if(i===IX.endconf){ confirmSince=Date.now(); }
+        if(i===IX.mvp){ mvpSince=Date.now(); }
         if(st.delay){
           delayPending=true;
           setTimeout(function(){
@@ -3471,6 +3521,7 @@ applyBat();
       promClicked=false; viewClicked=false; spotTgts=null; promKey=null; promIdx=-1; expTries=0; expSince=0; spotOff=false;
       startClicked=false; endClicked=false; endConfirmed=false; mvpSince=0; timerPrev=null; timerChanges=0; visUntil=0; delayPending=false;
       stopTick();
+      ['advOpp','injIn'].forEach(function(id){ var el=document.getElementById(id); if(el)el.readOnly=false; });
       document.body.classList.remove('tut4-open');
       removeSpot(); removeModal(); clearMenuDecor();
       clearRaised(); unliftMenu();
@@ -3505,35 +3556,52 @@ applyBat();
       if(i===23){
         if(tabOn('battaglia')){ enterStep(24); return; }
       }
-      if(i===26){
-        if(startClicked || pausePresent()){ enterStep(27); return; }
+      if(i===IX.start){
+        if(document.getElementById('advMdl')){ enterStep(IX.adv1); return; }
+        if(startClicked || pausePresent()){ enterStep(IX.views1); return; }
         var tn=timerText();
         if(tn && timerPrev!==null && tn!==timerPrev){ timerChanges++; timerPrev=tn; }
         else if(tn && timerPrev===null){ timerPrev=tn; }
-        if(timerChanges>=2){ enterStep(27); return; }
+        if(timerChanges>=2){ enterStep(IX.views1); return; }
       }
-      if(i===28 && viewClicked){
-        if(findBattleCard()){ enterStep(29); return; }
+      if(i===IX.views2 && viewClicked){
+        if(findBattleCard()){ enterStep(IX.bcard1); return; }
       }
-      if(i===31 && expSince){
-        if(expOpen()){ enterStep(32); return; }
+      if(i===IX.exp1 && expSince){
+        if(expOpen()){ enterStep(IX.mvp); return; }
         var el=Date.now()-expSince;
         if(expTries<4 && el>expTries*260){ expTries++; tryOpenExp(); }
-        if(expOpen()){ enterStep(32); return; }
-        if(el>2600){ enterStep(32); return; }
+        if(expOpen()){ enterStep(IX.mvp); return; }
+        if(el>2600){ enterStep(IX.mvp); return; }
       }
-      if(i===32){
-        if(mvpChecked() || anyExpChecked()){ enterStep(33); return; }
+      if(i===IX.mvp){
+        if(mvpChecked() || anyExpChecked()){ enterStep(IX.wound1); return; }
       }
-      if(i===34){
-        if(findConfirmDialog()){ enterStep(35); return; }
-        if(endClicked && (Date.now()-endSince)>700){ enterStep(35); return; }
+      if(i===IX.endbtn){
+        if(findConfirmDialog()){ enterStep(IX.endconf); return; }
+        if(endClicked && (Date.now()-endSince)>700){ enterStep(IX.endconf); return; }
       }
-      if(i===35){
-        if(endConfirmed){ enterStep(36); return; }
-        if(!spotEls && findConfirmDialog()){ showSpot(35); }
-        if(confirmSince && (Date.now()-confirmSince)>6000 && !findConfirmDialog()){ enterStep(34); return; }
+      if(i===IX.endconf){
+        if(endConfirmed){ enterStep(IX.expassign); return; }
+        if(!spotEls && findConfirmDialog()){ showSpot(IX.endconf); }
+        if(confirmSince && (Date.now()-confirmSince)>6000 && !findConfirmDialog()){ enterStep(IX.endbtn); return; }
       }
+      if(typeof S!=='undefined'&&S){
+        if(i===IX.adv2 && document.querySelector('#advMdl .advo')){ enterStep(IX.adv3); return; }
+        if(i===IX.adv3 && S.tm && S.tm.run){ enterStep(IX.views1); return; }
+        if(i===IX.wound1){
+          var ti=firstTroopIdx();
+          if(ti>=0){
+            var wu=S.t[ti], wm=0; try{ wm=+troop(wu).p[6]||0; }catch(e){}
+            if(wu.bt && wu.bt[3]!=null && wm>0 && wu.bt[3]<wm){ wu.bt[3]=0; try{ save(); }catch(e){} enterStep(IX.wound2); try{ render(); }catch(e){} return; }
+          }
+        }
+        if(i===IX.cross && document.getElementById('injMdl')){ enterStep(IX.inj1); return; }
+        if(i===IX.inj3 && document.getElementById('injMdl') && !document.getElementById('injIn')){ enterStep(IX.injend); return; }
+        if(i===IX.injend && !document.getElementById('injMdl')){ nextStep(); return; }
+      }
+      var roLk=curLock(), ro=(roLk==='advview'||roLk==='injview');
+      ['advOpp','injIn'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.readOnly=!!ro; if(ro&&document.activeElement===el)el.blur(); } });
       if(st && st.mode==='spot' && !spotEls && !spotOff && !delayPending && !st.delay && !document.getElementById('tutOverlay')){
         showSpot(i);
       }
@@ -3567,7 +3635,7 @@ applyBat();
         }
         if(lk==='mvp'){
           if(mvpHit(t)){
-            setTimeout(function(){ if(window.__tutOpen&&window.__tutStep===32&&(mvpChecked()||anyExpChecked()))enterStep(33); },70);
+            setTimeout(function(){ if(window.__tutOpen&&window.__tutStep===IX.mvp&&(mvpChecked()||anyExpChecked()))enterStep(IX.wound1); },70);
           }
           return;
         }
@@ -3583,7 +3651,7 @@ applyBat();
           var rb=t.closest?t.closest('button,.btn,[role="button"]'):null;
           if(!rb)return;
           var tx=btnText(rb);
-          if(CANCEL_RE.test(tx)){ enterStep(34); return; }
+          if(CANCEL_RE.test(tx)){ enterStep(IX.endbtn); return; }
           if(CONF_RE.test(tx)){ endConfirmed=true; spotOff=true; removeSpot(); }
           return;
         }
@@ -3606,7 +3674,7 @@ applyBat();
             e.stopPropagation(); e.preventDefault();
             expSince=Date.now(); expTries=1;
             tryOpenExp();
-            if(expOpen()){ enterStep(32); }
+            if(expOpen()){ enterStep(IX.mvp); }
           }
           return;
         }
@@ -4422,20 +4490,22 @@ try{save()}catch(e){}render();scrollTo(0,0)}
 function step1(){
 var mine=myRating();
 modal('<h3>Inserisci il punteggio dell\'avversario</h3><p class="mu" style="margin:0 0 8px">Il tuo rating: <b>'+mine+'</b></p><input id="advOpp" type="number" inputmode="numeric" min="0" step="1" value="'+esc(lastOpp)+'" placeholder="Rating avversario" style="width:100%;box-sizing:border-box;font-size:20px;text-align:center"><div class="advrow"><button class="btn" data-a="no">Annulla</button><button class="btn pri" data-a="ok">Conferma</button></div>',function(a,o){
-if(a==='no'){closeM();return}
+if(a==='no'){if(window.__tutOpen)return;closeM();return}
 var inp=document.getElementById('advOpp'),v=parseInt(inp.value,10);
 if(isNaN(v)||v<0){inp.focus();inp.style.outline='2px solid #e03131';return}
+if(window.__tutOpen&&v!==200){inp.style.outline='2px solid #e03131';toast('Nel tutorial inserisci 200');return}
 lastOpp=String(v);closeM();
 var diff=Math.abs(mine-v);
 if(diff<15){S.adv={kind:'none',opp:v,mine:mine,diff:diff};toast('Differenza di '+diff+' punti: nessun vantaggio');startTimer();return}
 step2(mine,v,diff)});
-setTimeout(function(){var i=document.getElementById('advOpp');if(i)i.focus()},50)}
+if(!window.__tutOpen)setTimeout(function(){var i=document.getElementById('advOpp');if(i)i.focus()},50)}
 
 /* 2) scelta del vantaggio */
 function step2(mine,opp,diff){
 var own=mine<opp,av=OPTS.filter(function(o){return diff>=o.min});
 modal('<h3>Vantaggio da rating</h3><p style="margin:0">Differenza: <b>'+diff+'</b> punti (tu '+mine+' · avversario '+opp+')</p><p class="advwho '+(own?'me':'op')+'">Il vantaggio è <b>'+(own?'tuo':'dell\'avversario')+'</b> (rating più basso).'+(own?'':'<br><b>Nessuna modifica verrà applicata alla tua armata.</b>')+'</p><p class="mu" style="margin:0 0 4px">Scegli 1 opzione:</p>'+av.map(function(o){return '<button class="btn advo" data-a="o:'+o.k+'"><b>'+o.t+'</b><small>'+o.d+'</small></button>'}).join('')+'<div class="advrow"><button class="btn" data-a="no">Annulla</button></div>',function(a){
-if(a==='no'){closeM();return}
+if(a==='no'){if(window.__tutOpen)return;closeM();return}
+if(window.__tutOpen&&a!=='o:rr')return;
 pick(a.slice(2),mine,opp,diff,own)})}
 
 function base(k,mine,opp,diff,own){return{kind:k,opp:opp,mine:mine,diff:diff,mineLow:own}}
@@ -4443,7 +4513,7 @@ function pick(k,mine,opp,diff,own){
 if(!own){S.adv={kind:'none',opp:opp,mine:mine,diff:diff};closeM();toast('Vantaggio dell\'avversario: nessuna modifica alla tua armata');startTimer();return}
 var who=own?[]:['(Vantaggio dell\'avversario: nessuna modifica per il tuo roster.)'];
 if(k==='infl'||k==='xp'){S.adv=base(k,mine,opp,diff,own);closeM();notice(['I modificatori saranno applicati a fine partita.'].concat(who),startTimer)}
-else if(k==='rr'){S.adv=base(k,mine,opp,diff,own);S.adv.rr=[0,0];closeM();notice(['In fondo trovi le caselle spuntabili per tenere traccia dell\'utilizzo.'],startTimer)}
+else if(k==='rr'){S.adv=base(k,mine,opp,diff,own);S.adv.rr=[0,0];closeM();if(window.__tutOpen){startTimer();return}notice(['In fondo trovi le caselle spuntabili per tenere traccia dell\'utilizzo.'],startTimer)}
 else if(k==='amb'){S.adv=base(k,mine,opp,diff,own);closeM();notice([own?'Perfetto, scegli tu lo scenario!':'L\'avversario sceglie lo scenario.'],startTimer)}
 else if(k==='tk'){
 modal('<h3>Tool kit</h3><p class="mu" style="margin:0 0 4px">Scegli il kit:</p>'+Object.keys(KITS).map(function(n,i){return '<button class="btn advo" data-a="k:'+i+'"><b>'+n+'</b><small>'+kitTxt(n)+'</small></button>'}).join('')+'<div class="advrow"><button class="btn" data-a="back">Indietro</button><button class="btn" data-a="no">Annulla</button></div>',function(a){
@@ -4461,7 +4531,6 @@ S.adv.wd=name;notice([name+' è stato aggiunto alla sezione Eroi e verrà rimoss
 
 /* intercetta "Inizio battaglia" e il play del cronometro PRIMA delle altre patch */
 window.addEventListener('click',function(e){
-if(window.__tutOpen)return;
 var t=e.target&&e.target.closest?e.target.closest('#endb,#tgo'):null;if(!t)return;
 var m=S.tm||{};if(m.run||tmNow()>0)return;
 if(window.advPendingInj&&advPendingInj()){e.stopImmediatePropagation();e.preventDefault();toast('Risolvi prima le ferite: tocca le croci rosse sulle schede');return}
@@ -4609,11 +4678,12 @@ function modal(html,on){closeM();var o=document.createElement('div');o.className
 function notice(lines){modal('<h3>Ferite</h3>'+lines.map(function(l){return '<p>'+esc(l)+'</p>'}).join('')+'<div class="advrow"><button class="btn pri" data-a="ok">OK</button></div>',closeM)}
 function askNum(title,text,min,max,cb){
 modal('<h3>'+esc(title)+'</h3><p>'+esc(text)+'</p><input id="injIn" type="number" inputmode="numeric" min="'+min+'" max="'+max+'" step="1" placeholder="'+min+'–'+max+'" style="width:100%;box-sizing:border-box;font-size:20px;text-align:center"><div class="advrow"><button class="btn" data-a="no">Annulla</button><button class="btn pri" data-a="ok">Conferma</button></div>',function(a){
-if(a==='no'){closeM();return}
+if(a==='no'){if(window.__tutOpen)return;closeM();return}
 var inp=document.getElementById('injIn'),v=parseInt(inp.value,10);
 if(isNaN(v)||v<min||v>max){inp.focus();inp.style.outline='2px solid #e03131';return}
+if(window.__tutOpen&&title.indexOf('Ferite')===0&&v!==7){inp.style.outline='2px solid #e03131';toast('Nel tutorial inserisci 7');return}
 closeM();cb(v)});
-setTimeout(function(){var i=document.getElementById('injIn');if(i)i.focus()},50)}
+if(!window.__tutOpen)setTimeout(function(){var i=document.getElementById('injIn');if(i)i.focus()},50)}
 
 /* ---- effetti ---- */
 function skipNext(u){u.miss=true;u.injSkip=true}
