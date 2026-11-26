@@ -37,7 +37,7 @@ jobs:
               raise SystemExit("Errore: </head> non trovato.")
 
           head, rest = html[:head_end], html[head_end:]
-          pattern = re.compile(r"<style\\b[^>]*>([\\s\\S]*?)</style\\s*>", re.IGNORECASE)
+          pattern = re.compile(r"<style\b[^>]*>([\s\S]*?)</style\s*>", re.IGNORECASE)
           matches = list(pattern.finditer(head))
           link = '<link rel="stylesheet" href="styles.css">'
 
@@ -48,10 +48,10 @@ jobs:
               chunks = []
               for i, match in enumerate(matches, 1):
                   chunks.append(
-                      f"/* Blocco CSS statico {i} — ordine originale conservato */\\r\\n"
+                      f"/* Blocco CSS statico {i} — ordine originale conservato */\r\n"
                       + match.group(1)
                   )
-              css = "\\r\\n\\r\\n".join(chunks)
+              css = "\r\n\r\n".join(chunks)
 
               stripped_head = pattern.sub("", head)
               counter = {"value": 0}
@@ -77,7 +77,7 @@ jobs:
               print("CSS già estratto: nessuna modifica necessaria.")
 
           final = path.read_text(encoding="utf-8")
-          if re.search(r"<style\\b", final, re.IGNORECASE):
+          if re.search(r"<style\b", final, re.IGNORECASE):
               raise SystemExit("Errore: sono rimasti tag style statici.")
           if final.count(link) != 1:
               raise SystemExit("Errore: il link a styles.css non è presente una sola volta.")
@@ -121,7 +121,7 @@ jobs:
 
       - name: Imposta identificativo separato per APK di anteprima
         run: |
-          node -e "const fs=require('fs');const p='capacitor.config.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.appId += '.preview';c.appName += ' Preview';fs.writeFileSync(p,JSON.stringify(c,null,2)+'\\n');"
+          node -e "const fs=require('fs');const p='capacitor.config.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.appId += '.preview';c.appName += ' Preview';fs.writeFileSync(p,JSON.stringify(c,null,2)+'\n');"
 
       - name: Crea progetto Android di anteprima
         run: |
