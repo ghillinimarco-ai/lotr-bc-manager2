@@ -1,0 +1,152 @@
+name: Extract static CSS and build preview APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "Branch da modificare"
+        required: true
+        default: "refactor/analisi-e-modularizzazione"
+
+permissions:
+  contents: write
+
+jobs:
+  refactor-and-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch di lavoro
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          fetch-depth: 0
+
+      - name: Estrai CSS statico senza alterare il resto dell'HTML
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("www/index.html")
+          with path.open("r", encoding="utf-8", newline="") as f:
+              html = f.read()
+
+          head_end = html.lower().find("</head>")
+          if head_end < 0:
+              raise SystemExit("Errore: </head> non trovato.")
+
+          head, rest = html[:head_end], html[head_end:]
+          pattern = re.compile(r"<style\\b[^>]*>([\\s\\S]*?)</style\\s*>", re.IGNORECASE)
+          matches = list(pattern.finditer(head))
+          link = '<link rel="stylesheet" href="styles.css">'
+
+          if matches:
+              if len(matches) != 8:
+                  raise SystemExit(f"Attesi 8 blocchi CSS statici nell'head, trovati {len(matches)}.")
+
+              chunks = []
+              for i, match in enumerate(matches, 1):
+                  chunks.append(
+                      f"/* Blocco CSS statico {i} — ordine originale conservato */\\r\\n"
+                      + match.group(1)
+                  )
+              css = "\\r\\n\\r\\n".join(chunks)
+
+              stripped_head = pattern.sub("", head)
+              counter = {"value": 0}
+              def replace_style(_):
+                  counter["value"] += 1
+                  return link if counter["value"] == 1 else ""
+
+              new_head = pattern.sub(replace_style, head)
+              if counter["value"] != 8:
+                  raise SystemExit("Errore durante la sostituzione dei blocchi CSS.")
+              if new_head.replace(link, "", 1) != stripped_head:
+                  raise SystemExit("Controllo round-trip fallito: il resto dell'head è cambiato.")
+
+              with Path("www/styles.css").open("w", encoding="utf-8", newline="") as f:
+                  f.write(css)
+              html = new_head + rest
+              with path.open("w", encoding="utf-8", newline="") as f:
+                  f.write(html)
+              print(f"Estratti {len(matches)} blocchi CSS; foglio esterno: {len(css.encode('utf-8'))} byte.")
+          else:
+              if link not in head or not Path("www/styles.css").exists():
+                  raise SystemExit("Né gli 8 blocchi originali né il foglio CSS collegato sono presenti.")
+              print("CSS già estratto: nessuna modifica necessaria.")
+
+          final = path.read_text(encoding="utf-8")
+          if re.search(r"<style\\b", final, re.IGNORECASE):
+              raise SystemExit("Errore: sono rimasti tag style statici.")
+          if final.count(link) != 1:
+              raise SystemExit("Errore: il link a styles.css non è presente una sola volta.")
+          if not Path("www/styles.css").is_file():
+              raise SystemExit("Errore: styles.css non esiste.")
+          print("Controlli HTML/CSS superati.")
+          PY
+
+      - name: Verifica diff
+        run: |
+          git diff --check
+          git status --short
+
+      - name: Salva la modifica sul branch di lavoro
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add www/index.html www/styles.css
+          if git diff --cached --quiet; then
+            echo "Nessuna modifica da salvare."
+          else
+            git commit -m "Refactor: extract static CSS [skip ci]"
+            git push origin "HEAD:$TARGET_BRANCH"
+          fi
+
+      - name: Configura Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configura Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Installa dipendenze
+        run: npm install
+
+      - name: Imposta identificativo separato per APK di anteprima
+        run: |
+          node -e "const fs=require('fs');const p='capacitor.config.json';const c=JSON.parse(fs.readFileSync(p,'utf8'));c.appId += '.preview';c.appName += ' Preview';fs.writeFileSync(p,JSON.stringify(c,null,2)+'\\n');"
+
+      - name: Crea progetto Android di anteprima
+        run: |
+          npx cap add android
+          sudo apt-get update -qq
+          sudo apt-get install -y imagemagick
+          RES=android/app/src/main/res
+          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
+            IFS=: read -r dens L F <<< "$d"
+            convert icon-only.png -resize ${L}x${L} $RES/mipmap-$dens/ic_launcher.png
+            convert icon-only.png -resize ${L}x${L} $RES/mipmap-$dens/ic_launcher_round.png
+            convert icon-only.png -resize ${F}x${F} $RES/mipmap-$dens/ic_launcher_foreground.png
+          done
+          echo '<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_background">#0d1620</color></resources>' > $RES/values/ic_launcher_background.xml
+          npx cap sync android
+
+      - name: Compila APK di anteprima
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Carica APK di anteprima come artifact (non release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: LOTR-Roster-CSS-Preview-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
