@@ -3,6 +3,9 @@ name: Deploy PWA
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
