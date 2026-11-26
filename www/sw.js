@@ -1,6 +1,6 @@
 /* Service worker: rete prima, cache come riserva offline. Il video non viene messo in cache. */
-const CACHE = 'lotr-roster-v2';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'lotr-roster-v3';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'js/images-bene.js', 'js/images-male.js', 'js/images-lupo.js', 'js/app.js', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
