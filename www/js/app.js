@@ -6,26 +6,6 @@
    blocca le successive (come accadeva con i blocchi separati).
    ========================================================================== */
 
-const K='lotr_bc_v1',TAB0='sum';let tab=TAB0;
-const HS={bw:['Wargear base',5],aw:['Wargear aggiuntivo',5],eq:['Equipaggiamento / Creature',6],mn:['Regole minori',4],sp:['Regole speciali',5],cu:['Upgrade di compagnia',1],spl:['Incantesimi (Channeling)',6],ha:['Azioni eroiche',5],inj:['Infortuni',2],tk:['Kit (temporaneo)',12]};
-const TS={bw:['Wargear base',6],aw:['Wargear aggiuntivo',6],eq:['Equipaggiamento',6],inj:['Infortuni',2],tk:['Kit (temporaneo)',12]};
-const mk=(S)=>{const g={};for(const k in S)g[k]=Array(S[k][1]).fill('');return g};
-const newH=()=>({name:'',model:'',rank:'',path:'',mod:Array(9).fill(0),mfw:[0,0,0],g:mk(HS),xp:'',miss:false,img:''});
-const newT=()=>({name:'',model:'',rank:'',g:mk(TS),xp:'',miss:false,img:''});
-const fresh=()=>({bc:'',infl:0,wand:'',notes:'',h:Array.from({length:3},newH),t:Array.from({length:5},newT)});
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-let DB;try{DB=JSON.parse(localStorage.getItem('lotr_bc_v2'))}catch(e){}
-if(!DB||!DB.list||!DB.list.length){let o;try{o=JSON.parse(localStorage.getItem(K))}catch(e){}DB={cur:'',list:[{id:uid(),name:'Armata 1',data:o||fresh()}]};DB.cur=DB.list[0].id}
-const army=()=>DB.list.find(a=>a.id===DB.cur)||DB.list[0];
-const emp=x=>!x.name&&!x.model&&!x.img&&!x.xp&&Object.values(x.g).every(a=>a.every(v=>!v))&&(x.mfw||[]).every(v=>!v)&&(x.mod||[]).every(v=>!v);
-DB.list.forEach(a=>{const d=a.data;while(d.h.length>3&&emp(d.h[d.h.length-1]))d.h.pop();while(d.t.length>5&&emp(d.t[d.t.length-1]))d.t.pop()});
-const ALIAS=D.alias||{},hasK=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-function raceTheme(d){const B=D.bcs.find(b=>b.id===d.bc),rm=(D.themes&&D.themes[d.bc]&&D.themes[d.bc].c1&&D.themes[d.bc])||(B&&D.racemeta&&D.racemeta[B.race]);
- if(!rm){if(d.cAuto){delete d.c1;delete d.c2;delete d.cAuto}return}
- if((!d.c1&&!d.c2)||d.cAuto){d.c1=rm.c1;d.c2=rm.c2;d.cAuto=true}}
-let aliasN=0;DB.list.forEach(a=>{aliasN+=applyAlias(a.data);raceTheme(a.data)});
-let S=army().data,pend='',mo=false,mc=false,mb=false;const OP={};
-const save=()=>{try{localStorage.setItem('lotr_bc_v2',JSON.stringify(DB))}catch(e){if(!save.w){save.w=1;alert('Memoria del browser piena: le ultime modifiche non verranno salvate. Rimuovi qualche immagine.')}}};
 const delb=(id,u)=>`<div class="dr"><label class="skip"><input type="checkbox" data-p="${id}.miss" data-t="c"${u.miss?' checked':''}> Salta prossima partita</label><div>${id[0]==='t'?`<button class="btn" data-pro="${id}">${pend==='p'+id?'Conferma promozione?':'⭐ Promuovi a eroe'}</button> `:''}<button class="btn" data-del="${id}">${pend==='d'+id?'Conferma rimozione?':'✕ Rimuovi'}</button></div></div>`;
 const xpBar=(id,xp)=>{const n=Math.max(0,parseInt(xp)||0),lv=Math.floor(n/5)+1,p=n%5,uu=(id[0]==='h'?S.h:S.t)[+id.slice(2)],bl=uu&&uu.lvUp;return`<div class="xpw"><div class="lvl${bl?' blink':''}" data-lv="${id}" title="${bl?'Tocca per confermare il nuovo livello':'Livello'}"><small>LV</small><b>${lv}</b></div><div class="xpb"><i style="width:${p*20}%"></i><span>${n} XP · ${p}/5</span></div><div class="xpc"><button class="btn" data-xp="${id}.-1" aria-label="Meno XP">−</button><button class="btn" data-xp="${id}.1" aria-label="Più XP">+</button></div></div>`};
 const pic=(b,im,big)=>`<div class="pic${big?' big':''}">${im?`<img src="${im}" alt="" data-zoom="1">`:'<div class="ph">Nessuna immagine</div>'}<div><label class="btn">📷 ${im?'Cambia':'Carica'}<input type="file" accept="image/*" data-img="${b}" hidden></label>${im?` <button class="btn" data-rm="${b}">✕</button>`:''}</div></div>`;
@@ -110,10 +90,6 @@ function importText(txt){let o;try{o=JSON.parse(txt)}catch(e){return -1}
   const base=String(a.name||'Armata importata').slice(0,60);let name=base,k=0;while(DB.list.some(x=>x.name===name)){k++;name=base+' (importata'+(k>1?' '+k:'')+')'}
   const nd=normA(d);applyAlias(nd);raceTheme(nd);DB.list.push({id:uid(),name,data:nd});n++}
  if(n){DB.cur=DB.list[DB.list.length-1].id;S=army().data}return n}
-function applyAlias(d){let n=0;const A=(c,v)=>{const m=ALIAS[c];if(v&&m&&hasK(m,v)&&m[v]&&m[v]!==v){n++;return m[v]}return v},L=(g,k,c)=>{if(Array.isArray(g[k]))g[k]=g[k].map(v=>A(c,v))};
- d.bc=A('bc',d.bc);d.wand=A('wanderers',d.wand);
- d.h.forEach(h=>{h.model=A('profiles',h.model);h.path=A('paths',h.path);const g=h.g;L(g,'bw','wargear');L(g,'aw','wargear');L(g,'eq','equip');L(g,'mn','minor');L(g,'sp','special');L(g,'cu','comp');L(g,'spl','spells');L(g,'ha','heroic');L(g,'inj','injuries')});
- d.t.forEach(t=>{t.model=A('profiles',t.model);const g=t.g;L(g,'bw','wargear');L(g,'aw','wargear');L(g,'eq','equip');L(g,'inj','injuries')});return n}
 function audit(d){const I=[],B=D.bcs.find(b=>b.id===d.bc),add=(who,fld,val,why,clear)=>I.push({who,fld,val,why,clear});
  const ck=(who,o,key,idx,fld,ok,bk)=>{const v=idx==null?o[key]:o[key][idx];if(!v)return;const set=()=>{if(idx==null)o[key]='';else o[key][idx]=''};if(!ok(v))add(who,fld,v,'non presente nei dati',set);else if(B&&bk&&!bk(v))add(who,fld,v,'non disponibile per questa Battle Company',set)};
  const each=(who,o,key,fld,ok,bk)=>(o[key]||[]).forEach((_,j)=>ck(who,o,key,j,fld,ok,bk));
