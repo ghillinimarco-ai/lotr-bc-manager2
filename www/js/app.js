@@ -1639,11 +1639,3 @@ document.head.appendChild(css);
 /* ----- [CUSTOM-01] MFW-UI ----- */
 function mfwStep(i,j,v){v=+v||0;var N=['Might','Will','Fate'][j];
 return '<div class="mfwc"><div class="mfwh">'+N+'</div><div class="mfwrow"><button type="button" class="mfwb" data-mfw="'+i+'.'+j+'.-1">&#8722;</button><div class="mfwv"><b>'+v+'</b><span>/'+v+'</span></div><button type="button" class="mfwb" data-mfw="'+i+'.'+j+'.1">+</button></div></div>';}
-try{
-document.addEventListener('click',function(e){
-var t=e.target&&e.target.closest?e.target.closest('[data-mfw]'):null;if(!t)return;
-var p=t.getAttribute('data-mfw').split('.');var h=S.h[+p[0]];if(!h)return;
-h.mfw[+p[1]]=Math.max(0,(+h.mfw[+p[1]]||0)+(+p[2]));
-save();render();
-});
-}catch(e){console.error('[MFW-UI]',e)}
